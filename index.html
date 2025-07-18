@@ -2,10 +2,10 @@
 <html lang="fa" dir="rtl">
 
   <head>
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>کافه مافیا</title>
@@ -37,16 +37,20 @@
     <div id="playing" style="display:none;">
       <h2 id="playerName"></h2>
       <h3 id="playerRole" style="display:none;"></h3>
-      <button class="green" onclick="assignRole()" id="roleBtn">نقش منو نشون بده</button>
+      <img src="img/mask.png" onclick="assignRole()" id="roleMask"></img>
+      <button class="green" onclick="assignRole()" id="roleBtn" style="display: none;">نقش منو نشون
+        بده</button>
+
     </div>
 
     <div id="confirmation" style="display:none;">
       <h3>همه بازیکن‌ها نقش‌هاشون رو گرفتن؟</h3>
+      <!-- <input class="confirmCode" type="number" id="confirmCode"> -->
       <button class="red" onclick="confirmGameEnd()">بله، لیست بازیکن‌ها رو نشون بده</button>
     </div>
 
     <div id="results" style="display:none;">
-      <h2>لیست بازیکنان و نقش‌ها</h2>
+      <h3>لیست بازیکنان و نقش‌ها</h3>
       <table class="table">
         <thead>
           <tr>
@@ -76,13 +80,18 @@
     };
 
     function playBeep() {
-      const audio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
+
+    }
+    function playSound(fileName) {
+      const audio = new Audio('mp3/' + fileName + '.mp3');
+      // console.log(fileName);
       audio.play();
     }
-
     function startGame() {
       const playersText = document.getElementById("players").value.trim();
       const rolesText = document.getElementById("roles").value.trim();
+      // const originalRoles = rolesText.split("\n").map(r => r.trim()).filter(r => r); // NEW LINE
+      const originalRoles = [...roleList];
 
       // Save inputs to localStorage
       localStorage.setItem("playersText", playersText);
@@ -92,11 +101,12 @@
       roleList = rolesText.split("\n").map(r => r.trim()).filter(r => r);
 
       if (playerList.length !== roleList.length) {
-        alert("تعداد بازیکن‌ها و نقش‌ها باید برابر باشد");
+        alert("تعداد بازیکن‌ها " + playerList.length + " و نقش‌ها " + roleList.length + " باید برابر باشد");
         return;
       }
 
       roleList = shuffle(roleList);
+      window.originalRolesOrder = originalRoles; // ذخیره نقش‌ها به صورت گلوبال
       assignments = [];
       currentIndex = 0;
       showRole = false;
@@ -107,20 +117,27 @@
     }
 
     function updatePlayerView() {
+      // playSound('reveal');
       document.getElementById("playerName").textContent = playerList[currentIndex];
       document.getElementById("playerRole").style.display = "none";
       document.getElementById("roleBtn").textContent = "نقش منو نشون بده";
+      document.getElementById("roleBtn").style.display = "none";
+      document.getElementById("roleMask").style.display = "initial";
+
     }
 
     function assignRole() {
-      playBeep();
       if (!showRole) {
+        playSound('reveal');
         assignments.push({ player: playerList[currentIndex], role: roleList[currentIndex] });
         document.getElementById("playerRole").textContent = "در نقش " + roleList[currentIndex];
         document.getElementById("playerRole").style.display = "block";
         document.getElementById("roleBtn").textContent = "بعدی";
+        document.getElementById("roleBtn").style.display = "initial";
+        document.getElementById("roleMask").style.display = "none";
         showRole = true;
       } else {
+        playSound('ok');
         currentIndex++;
         if (currentIndex < playerList.length) {
           showRole = false;
@@ -133,14 +150,25 @@
     }
 
     function confirmGameEnd() {
+      // if (confirmCode.value !== '000') {
+      //   alert("برای مشاهده لیست بازکنان به کد تایید نیاز است");
+      //   return;
+      // }
       const resultsBody = document.getElementById("resultsBody");
       resultsBody.innerHTML = "";
-      assignments.sort((a, b) => roleList.indexOf(a.role) - roleList.indexOf(b.role)).forEach((item, index) => {
+
+      // مرتب‌سازی بر اساس ترتیب اولیه نقش‌ها
+      const originalRoles = document.getElementById("roles").value.trim().split("\n").map(r => r.trim()).filter(r => r);
+      assignments.sort((a, b) => originalRoles.indexOf(a.role) - originalRoles.indexOf(b.role));
+
+      assignments.forEach((item, index) => {
         resultsBody.innerHTML += `<tr><td>${index + 1}</td><td>${item.role}</td><td>${item.player}</td></tr>`;
       });
+
       document.getElementById("confirmation").style.display = "none";
       document.getElementById("results").style.display = "block";
     }
+
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
