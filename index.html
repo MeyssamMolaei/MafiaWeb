@@ -21,6 +21,18 @@
       <!-- <h2>نام بازکنان و نقش‌ها را وارد کنید</h2> -->
       <div>
         <div class="div-label">
+          <label>سناریو:</label>
+        </div>
+        <select id="players"></select>
+        <option value="default">انتخاب سناریو</option>
+        <option value="mafia">مافیا</option>
+        <option value="vampire">زامبی‌ها</option>
+        <option value="werewolf">گرگینه‌ها</option>
+        <option value="custom">سفارشی</option>
+        </select>
+      </div>
+      <div>
+        <div class="div-label">
           <label>بازیکنان:</label>
         </div>
         <textarea id="players"></textarea>
@@ -147,7 +159,7 @@
         document.getElementById("roleMask").style.display = "none";
         showRole = true;
       } else {
-        playSound('ok');
+        // playSound('ok');
         currentIndex++;
         if (currentIndex < playerList.length) {
           showRole = false;
